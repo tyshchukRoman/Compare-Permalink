@@ -2,3 +2,45 @@
  * All of the CSS for your admin-specific functionality should be
  * included in this file.
  */
+.compare-permalinks-settings-page {
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  --color-dark-1: #afafaf;
+  --color-dark-2: #cccccc;
+}
+
+.compare-permalinks-table {
+    margin-top: 40px;
+    overflow: auto;
+    width: 100%;
+}
+
+.compare-permalinks-table table {
+    border: 1px solid var(--color-primary);
+    height: 100%;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border-spacing: 1px;
+    text-align: left;
+}
+
+.compare-permalinks-table caption {
+    caption-side: top;
+    text-align: left;
+}
+
+.compare-permalinks-table th {
+    border: 1px solid var(--color-dark-1);
+    background-color: var(--color-dark-2);
+    color: #000000;
+    padding: 5px;
+}
+
+.compare-permalinks-table td {
+    border: 1px solid var(--color-dark-1);
+    background-color: var(--color-white);
+    color: var(--color-black);
+    padding: 5px;
+}

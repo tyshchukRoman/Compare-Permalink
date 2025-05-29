@@ -61,18 +61,6 @@ class Compare_Permalinks_Admin {
 	 */
 	public function enqueue_styles() {
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Compare_Permalinks_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Compare_Permalinks_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/compare-permalinks-admin.css', array(), $this->version, 'all' );
 
 	}
@@ -84,20 +72,77 @@ class Compare_Permalinks_Admin {
 	 */
 	public function enqueue_scripts() {
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Compare_Permalinks_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Compare_Permalinks_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/compare-permalinks-admin.js', array( 'jquery' ), $this->version, false );
 
 	}
+
+	/**
+	 * Add Settings Page for the admin area.
+	 *
+	 * @since    1.0.0
+	 */
+	public function add_settings_page() {
+
+    add_management_page(
+      __('Compare Permalinks', 'compare-permalinks'), // Page title
+      __('Compare Permalinks', 'compare-permalinks'), // Menu title
+      'manage_options',                               // Capability
+      'compare-permalinks-settings',                  // Menu slug
+      [$this, 'compare_permalinks_settings_display']  // Callback function
+    );
+
+	}
+
+	/**
+	 * HTML/PHP for Settings Page
+	 *
+	 * @since    1.0.0
+	 */
+	public function compare_permalinks_settings_display() {
+    $args = [
+      'post_type'       => ['post', 'page'],
+      'post_status'     => 'publish',
+      'posts_per_page'  => -1,
+      'orderby'         => 'title',
+      'order'           => 'ASC',
+    ];
+
+    $posts = get_posts($args);
+  ?>
+
+    <div class="wrap | compare-permalinks-settings-page">
+      <h1>
+        <?php _e('Compare Permalinks', 'compare-permalinks') ?>
+      </h1>
+
+      <div class="compare-permalinks-table">
+        <table>
+          <thead>
+            <tr>
+              <th><?php _e('Current website URLs', 'compare-permalinks') ?></th>
+              <th><?php _e('Imported URLs', 'compare-permalinks') ?></th>
+            </tr>
+          </thead>
+          <tbody>
+          <?php foreach($posts as $post): ?>
+            <tr>
+              <td>
+                <a href="<?php echo get_permalink($post) ?>">
+                  <?php echo get_permalink($post) ?>
+                </a>
+              </td>
+              <td>
+                <a href="<?php echo get_permalink($post) ?>">
+                  <?php echo get_permalink($post) ?>
+                </a>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <?php
+  }
 
 }
