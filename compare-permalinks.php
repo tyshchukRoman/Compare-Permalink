@@ -75,6 +75,8 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-compare-permalinks.php';
  */
 function run_compare_permalinks() {
 
+	require_once plugin_dir_path( __FILE__ ) . 'helpers/pretty-log.php';
+
 	$plugin = new Compare_Permalinks();
 	$plugin->run();
 

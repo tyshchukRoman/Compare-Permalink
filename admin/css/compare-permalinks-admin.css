@@ -10,6 +10,10 @@
   --color-dark-2: #cccccc;
 }
 
+.compare-permalinks-actions {
+  margin-top: 40px;
+}
+
 .compare-permalinks-table {
     margin-top: 40px;
     overflow: auto;

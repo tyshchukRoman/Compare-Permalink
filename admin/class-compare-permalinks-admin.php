@@ -99,50 +99,9 @@ class Compare_Permalinks_Admin {
 	 * @since    1.0.0
 	 */
 	public function compare_permalinks_settings_display() {
-    $args = [
-      'post_type'       => ['post', 'page'],
-      'post_status'     => 'publish',
-      'posts_per_page'  => -1,
-      'orderby'         => 'title',
-      'order'           => 'ASC',
-    ];
 
-    $posts = get_posts($args);
-  ?>
+	  require_once plugin_dir_path( __FILE__ ) . 'partials/compare-permalinks-admin-display.php';
 
-    <div class="wrap | compare-permalinks-settings-page">
-      <h1>
-        <?php _e('Compare Permalinks', 'compare-permalinks') ?>
-      </h1>
-
-      <div class="compare-permalinks-table">
-        <table>
-          <thead>
-            <tr>
-              <th><?php _e('Current website URLs', 'compare-permalinks') ?></th>
-              <th><?php _e('Imported URLs', 'compare-permalinks') ?></th>
-            </tr>
-          </thead>
-          <tbody>
-          <?php foreach($posts as $post): ?>
-            <tr>
-              <td>
-                <a href="<?php echo get_permalink($post) ?>">
-                  <?php echo get_permalink($post) ?>
-                </a>
-              </td>
-              <td>
-                <a href="<?php echo get_permalink($post) ?>">
-                  <?php echo get_permalink($post) ?>
-                </a>
-              </td>
-            </tr>
-          <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <?php
   }
 
 }
