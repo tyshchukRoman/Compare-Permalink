@@ -10,8 +10,17 @@
   --color-dark-2: #cccccc;
 }
 
-.compare-permalinks-actions {
-  margin-top: 40px;
+.compare-permalinks-settings-page p {
+  max-width: 80ch;
+}
+
+.compare-permalinks-settings-page p.submit {
+  margin: 1rem 0;
+  padding: 0;
+}
+
+.compare-permalinks-action {
+  margin-top: 60px;
 }
 
 .compare-permalinks-table {
