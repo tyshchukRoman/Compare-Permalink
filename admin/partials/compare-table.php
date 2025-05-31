@@ -61,24 +61,28 @@ $args = [
 
 $posts = get_posts($args);
 
+$current_urls = array_map(fn($post) => get_permalink($post), $posts);
+
 /*
- * Construct array
+ * Find all new urls on current website
  */
-$urls = [];
+$new_urls = [];
 
-$i = 0;
-
-while($i < count($posts) && $i < count($imported_urls)) {
-
-  if(isset($posts[$i])) {
-    $urls[$i][0] = get_permalink($posts[$i]);
+foreach ($current_urls as $url) {
+  if(!in_array($url, $imported_urls)) {
+    $new_urls[] = $url;
   }
+}
 
-  if(isset($imported_urls[$i])) {
-    $urls[$i][1] = $imported_urls[$i];
+/*
+ * Find missing urls in imported
+ */
+$missed_urls = [];
+
+foreach ($imported_urls as $url) {
+  if(!in_array($url, $current_urls)) {
+    $missed_urls[] = $url;
   }
-
-  $i++;
 }
 
 ?>
@@ -87,24 +91,37 @@ while($i < count($posts) && $i < count($imported_urls)) {
   <table>
     <thead>
       <tr>
-        <th><?php _e('Current website URLs', 'compare-permalinks') ?></th>
-        <th><?php _e('Imported URLs', 'compare-permalinks') ?></th>
+        <th><?php _e('New URLs on current website:', 'compare-permalinks') ?></th>
       </tr>
     </thead>
     <tbody>
-      <?php foreach($urls as $url): 
-        $current_url = isset($url[0]) ? $url[0] : '';
-        $imported_url = isset($url[1]) ? $url[1] : '';
-      ?>
+      <?php foreach($new_urls as $url): ?>
         <tr>
           <td>
-            <a target="_blank" href="<?php echo $current_url ?>">
-              <?php echo $current_url ?>
+            <a target="_blank" href="<?php echo $url ?>">
+              <?php echo $url ?>
             </a>
           </td>
+        </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
+</div>
+
+<div class="compare-permalinks-table">
+  <table>
+    <thead>
+      <tr>
+        <th><?php _e('Missed URLs from the imported file:', 'compare-permalinks') ?></th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach($missed_urls as $url): ?>
+        <tr>
           <td>
-            <a target="_blank" href="<?php echo $imported_url ?>">
-              <?php echo $imported_url ?>
+            <a target="_blank" href="<?php echo $url ?>">
+              <?php echo file_get_contents(COMPARE_PERMALINKS_URI . 'assets/icons/warning-icon.svg') ?>
+              <?php echo $url ?>
             </a>
           </td>
         </tr>

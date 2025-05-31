@@ -38,6 +38,20 @@ if ( ! defined( 'WPINC' ) ) {
 define( 'COMPARE_PERMALINKS_VERSION', '1.0.0' );
 
 /**
+ * Plugin Path
+ */
+if(!defined('COMPARE_PERMALINKS_PATH')) {
+  define('COMPARE_PERMALINKS_PATH', plugin_dir_path(__FILE__));
+}
+
+/**
+ * Plugin URI
+ */
+if(!defined('COMPARE_PERMALINKS_URI')) {
+  define('COMPARE_PERMALINKS_URI', plugins_url('/', __FILE__));
+}
+
+/**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-compare-permalinks-activator.php
  */
