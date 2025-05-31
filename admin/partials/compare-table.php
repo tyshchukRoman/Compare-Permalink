@@ -34,93 +34,101 @@ if ($_FILES['imported-links']['error'] !== UPLOAD_ERR_OK) {
 /*
  * Get URLs from imported file
  */
-$imported_urls = [];
-$imported_domain = null;
-
-$tmp_name = $_FILES['imported-links']['tmp_name'];
-
-$handle = fopen($tmp_name, 'r');
-
-if ($handle !== false) {
-  while (($url = fgets($handle)) !== false) {
-    $url = trim($url);
-    $imported_urls[] = cp_get_url_path($url);
-    $imported_domain = cp_get_url_domain($url);
-  }
-
-  fclose($handle);
-}
+$imported_urls = cp_get_imported_urls('imported-links');
 
 /*
  * Fetch all urls on current website
  */
 $current_urls = array_map(fn($url) => cp_get_url_path($url), cp_get_current_urls());
-$current_domain = cp_get_url_domain(get_site_url());
 
 /*
  * Find all new urls on current website
  */
-$new_urls = [];
+$results = cp_compare_urls($imported_urls, $current_urls);
 
-foreach ($current_urls as $url) {
-  if(!in_array($url, $imported_urls)) {
-    $new_urls[] = $current_domain . $url;
-  }
-}
-
-/*
- * Find missing urls in imported
- */
-$missed_urls = [];
-
-foreach ($imported_urls as $url) {
-  if(!in_array($url, $current_urls)) {
-    $missed_urls[] = $imported_domain . $url;
-  }
-}
+$site_url = rtrim(get_site_url(), '/');
 
 ?>
 
-<div class="compare-permalinks-table">
-  <table>
-    <thead>
-      <tr>
-        <th><?php esc_html_e('Imported File: These URLs are missing from the current website', 'compare-permalinks') ?></th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php foreach($missed_urls as $url): ?>
-        <tr>
-          <td>
-            <a target="_blank" href="<?php echo $url ?>">
-              <?php echo cp_get_inline_svg('warning-icon.svg') ?>
-              <?php echo $url ?>
-            </a>
-          </td>
-        </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
+<div style="display: flex; gap: 10px; margin-bottom: 10px;">
+  <select id="permalink-filter">
+    <option value="all"><?php _e('All', 'compare-permalinks') ?></option>
+    <option value="match"><?php _e('Matches', 'compare-permalinks') ?> ✅</option>
+    <option value="mismatch"><?php _e('Mismatches', 'compare-permalinks') ?> ❌</option>
+  </select>
+
+  <button id="toggle-domain" class="button"><?php _e('Toggle Domain Name', 'compare-permalinks') ?></button>
 </div>
 
-<div class="compare-permalinks-table">
-  <table>
-    <thead>
-      <tr>
-        <th><?php esc_html_e('Current Website: These URLs are missing from the imported file', 'compare-permalinks') ?></th>
+<table class="widefat striped" id="permalink-table" data-site-url="<?php echo esc_attr($site_url); ?>">
+  <thead>
+    <tr>
+      <th><?php _e('Imported Permalink', 'compare-permalinks') ?></th>
+      <th><?php _e('Matched Site Permalink', 'compare-permalinks') ?></th>
+      <th><?php _e('Status', 'compare-permalinks') ?></th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php foreach ($results as $row): ?>
+      <tr class="permalink-row <?php esc_attr_e($row['status']) ?>">
+        <td class="imported-link" data-path="<?php echo esc_attr($row['imported']) ?>">
+          <?php echo esc_html($row['imported']) ?>
+        </td>
+        <td class="matched-link" data-path="<?php echo esc_attr($row['current'] ?? '') ?>">
+          <?php echo esc_html($row['current'] ?? '—') ?>
+        </td>
+        <td>
+          <?php if ($row['status'] === 'match'): ?>
+            ✅ <?php _e('Match', 'compare-permalinks') ?>
+          <?php else: ?>
+            ❌ <?php _e('Mismatch', 'compare-permalinks') ?> (<?php echo round($row['similarity'], 1) ?>%)
+          <?php endif; ?>
+        </td>
       </tr>
-    </thead>
-    <tbody>
-      <?php foreach($new_urls as $url): ?>
-        <tr>
-          <td>
-            <a target="_blank" href="<?php echo $url ?>">
-              <?php echo cp_get_inline_svg('warning-icon.svg') ?>
-              <?php echo $url ?>
-            </a>
-          </td>
-        </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
-</div>
+    <?php endforeach; ?>
+  </tbody>
+</table>
+
+<script>
+  // Filtering logic
+  document.getElementById('permalink-filter').addEventListener('change', function () {
+    const selected = this.value;
+    const rows = document.querySelectorAll('.permalink-row');
+
+    rows.forEach(row => {
+      if (selected === 'all') {
+        row.style.display = '';
+      } else if (!row.classList.contains(selected)) {
+        row.style.display = 'none';
+      } else {
+        row.style.display = '';
+      }
+    });
+  });
+
+  // Toggle domain logic
+  document.getElementById('toggle-domain').addEventListener('click', function () {
+    const table = document.getElementById('permalink-table');
+    const siteUrl = table.dataset.siteUrl;
+
+    const toggleCellLink = (cell, type) => {
+      const path = cell.dataset.path;
+      if (!path || path === '—') return;
+
+      const isLinked = cell.querySelector('a');
+      if (isLinked) {
+        cell.textContent = path;
+      } else {
+        const a = document.createElement('a');
+        a.href = siteUrl + path;
+        a.textContent = siteUrl + path;
+        a.target = '_blank';
+        cell.textContent = '';
+        cell.appendChild(a);
+      }
+    };
+
+    document.querySelectorAll('.imported-link').forEach(cell => toggleCellLink(cell, 'imported'));
+    document.querySelectorAll('.matched-link').forEach(cell => toggleCellLink(cell, 'matched'));
+  });
+</script>
