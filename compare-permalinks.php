@@ -79,6 +79,11 @@ register_deactivation_hook( __FILE__, 'deactivate_compare_permalinks' );
 require plugin_dir_path( __FILE__ ) . 'includes/class-compare-permalinks.php';
 
 /**
+ * Plugin Helpers
+ */
+require_once plugin_dir_path( __FILE__ ) . 'helpers/helpers.php';
+
+/**
  * Begins execution of the plugin.
  *
  * Since everything within the plugin is registered via hooks,
@@ -88,8 +93,6 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-compare-permalinks.php';
  * @since    1.0.0
  */
 function run_compare_permalinks() {
-
-	require_once plugin_dir_path( __FILE__ ) . 'helpers/pretty-log.php';
 
 	$plugin = new Compare_Permalinks();
 	$plugin->run();

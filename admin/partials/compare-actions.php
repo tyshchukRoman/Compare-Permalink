@@ -1,5 +1,15 @@
 <div class="compare-permalinks-actions">
   <div class="compare-permalinks-action">
+    <form method="post" action="options.php">
+      <?php
+        settings_fields('compare_permalinks_settings_group');
+        do_settings_sections('compare_permalinks_settings_page');
+        submit_button();
+      ?>
+    </form>
+  </div>
+
+  <div class="compare-permalinks-action">
     <h2>
       <?php _e('Export URLs from the Current Website', 'compare-permalinks') ?>
     </h2>

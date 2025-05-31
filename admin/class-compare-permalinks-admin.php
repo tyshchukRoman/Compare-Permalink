@@ -48,10 +48,8 @@ class Compare_Permalinks_Admin {
 	 * @param      string    $version    The version of this plugin.
 	 */
 	public function __construct( $plugin_name, $version ) {
-
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
-
 	}
 
 	/**
@@ -60,9 +58,7 @@ class Compare_Permalinks_Admin {
 	 * @since    1.0.0
 	 */
 	public function enqueue_styles() {
-
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/compare-permalinks-admin.css', array(), $this->version, 'all' );
-
 	}
 
 	/**
@@ -71,9 +67,7 @@ class Compare_Permalinks_Admin {
 	 * @since    1.0.0
 	 */
 	public function enqueue_scripts() {
-
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/compare-permalinks-admin.js', array( 'jquery' ), $this->version, false );
-
 	}
 
 	/**
@@ -82,7 +76,6 @@ class Compare_Permalinks_Admin {
 	 * @since    1.0.0
 	 */
 	public function add_settings_page() {
-
     add_management_page(
       __('Compare Permalinks', 'compare-permalinks'), // Page title
       __('Compare Permalinks', 'compare-permalinks'), // Menu title
@@ -90,7 +83,6 @@ class Compare_Permalinks_Admin {
       'compare-permalinks-settings',                  // Menu slug
       [$this, 'compare_permalinks_settings_display']  // Callback function
     );
-
 	}
 
 	/**
@@ -99,9 +91,7 @@ class Compare_Permalinks_Admin {
 	 * @since    1.0.0
 	 */
 	public function compare_permalinks_settings_display() {
-
 	  require_once plugin_dir_path( __FILE__ ) . 'partials/compare-settings.php';
-
   }
 
 	/**
@@ -110,25 +100,15 @@ class Compare_Permalinks_Admin {
 	 * @since    1.0.0
 	 */
 	public function handle_csv_export_action() {
-
     if (
       isset($_POST['compare_permalinks_export_csv']) &&
       isset($_POST['compare_permalinks_export_csv_nonce']) &&
       wp_verify_nonce($_POST['compare_permalinks_export_csv_nonce'], 'compare_permalinks_export_csv')
     ) {
-      $args = [
-        'post_type'       => ['post', 'page'],
-        'post_status'     => 'publish',
-        'posts_per_page'  => -1,
-        'orderby'         => 'title',
-        'order'           => 'ASC',
-      ];
-
-      $posts = get_posts($args);
-
+      $current_urls = cp_get_current_urls();
       $site_title = get_bloginfo('name');
 
-      if (!empty($posts)) {
+      if (!empty($current_urls)) {
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="'.$site_title.'-permalinks.csv"');
         header('Pragma: no-cache');
@@ -136,17 +116,46 @@ class Compare_Permalinks_Admin {
 
         $output = fopen('php://output', 'w');
 
-        foreach ($posts as $post) {
-          fputcsv($output, [
-            get_permalink($post),
-          ]);
+        foreach ($current_urls as $url) {
+          fputcsv($output, [$url]);
         }
 
         fclose($output);
         exit;
       }
     }
+  }
 
+  public function register_settings() {
+    register_setting('compare_permalinks_settings_group', 'compare_permalinks_post_types');
+
+    add_settings_section(
+      'compare_permalinks_main_section',
+      __('Post Types', 'compare-permalinks'),
+      null,
+      'compare_permalinks_settings_page'
+    );
+
+    add_settings_field(
+      'compare_permalinks_post_types_field',
+      __('Post Types', 'compare-permalinks'),
+      [$this, 'compare_permalinks_post_types_field_callback'],
+      'compare_permalinks_settings_page',
+      'compare_permalinks_main_section'
+    );
+  }
+
+  function compare_permalinks_post_types_field_callback() {
+    $selected = get_option('compare_permalinks_post_types', []);
+    $post_types = get_post_types(['public' => true], 'objects');
+
+    foreach ($post_types as $post_type) {
+      $checked = in_array($post_type->name, $selected) ? 'checked' : '';
+      echo '<label>';
+      echo '<input type="checkbox" name="compare_permalinks_post_types[]" value="' . esc_attr($post_type->name) . '" ' . $checked . '>';
+      echo ' ' . esc_html($post_type->label);
+      echo '</label><br>';
+    }
   }
 
 }
