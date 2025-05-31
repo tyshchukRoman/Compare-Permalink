@@ -89,6 +89,8 @@ $site_url = rtrim(get_site_url(), '/');
   </tbody>
 </table>
 
+<button id="export-csv" class="button" style="margin-top: 10px;"><?php _e('Export CSV', 'compare-permalinks') ?></button>
+
 <script>
   // Filtering logic
   document.getElementById('permalink-filter').addEventListener('change', function () {
@@ -132,3 +134,35 @@ $site_url = rtrim(get_site_url(), '/');
     document.querySelectorAll('.matched-link').forEach(cell => toggleCellLink(cell, 'matched'));
   });
 </script>
+
+<script>
+  document.getElementById('export-csv').addEventListener('click', function () {
+    const rows = document.querySelectorAll('.permalink-row');
+    const headers = ['Imported Permalink', 'Matched Site Permalink', 'Status', 'Similarity %'];
+    const csv = [headers];
+
+    rows.forEach(row => {
+      const imported = row.querySelector('.imported-link')?.dataset.path || '';
+      const matched = row.querySelector('.matched-link')?.dataset.path || '';
+      const status = row.classList.contains('match') ? 'Match' : 'Mismatch';
+      const similarityText = row.querySelector('td:last-child')?.textContent.match(/\(([\d.]+)%\)/);
+      const similarity = similarityText ? similarityText[1] : (status === 'Match' ? '100' : '');
+
+      csv.push([imported, matched, status, similarity]);
+    });
+
+    // Convert to CSV format
+    const csvContent = csv.map(row => row.map(val => `"${val}"`).join(',')).join('\n');
+
+    // Trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'permalink-comparison.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+</script>
+
