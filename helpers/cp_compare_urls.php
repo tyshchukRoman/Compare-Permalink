@@ -1,10 +1,10 @@
 <?php
 
-function cp_compare_urls($imported, $current) {
+function cp_compare_urls($imported_links, $current_links) {
     $results = [];
 
-    foreach ($imported as $imported_link) {
-        if (in_array($imported_link, $current)) {
+    foreach ($imported_links as $imported_link) {
+        if (in_array($imported_link, $current_links)) {
             $results[] = [
                 'status' => 'match',
                 'imported' => $imported_link,
@@ -16,11 +16,11 @@ function cp_compare_urls($imported, $current) {
             $best_match = null;
             $highest_similarity = 0;
 
-            foreach ($current as $cur) {
-                similar_text($imported_link, $cur, $percent);
+            foreach ($current_links as $current_link) {
+                similar_text($imported_link, $current_link, $percent);
                 if ($percent > $highest_similarity) {
                     $highest_similarity = $percent;
-                    $best_match = $cur;
+                    $best_match = $current_link;
                 }
             }
 
