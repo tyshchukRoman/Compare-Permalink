@@ -1,104 +1,36 @@
 <?php
 
-/**
- * The admin-specific functionality of the plugin.
- *
- * @link       http://example.com
- * @since      1.0.0
- *
- * @package    Compare_Permalinks
- * @subpackage Compare_Permalinks/admin
- */
-
-/**
- * The admin-specific functionality of the plugin.
- *
- * Defines the plugin name, version, and two examples hooks for how to
- * enqueue the admin-specific stylesheet and JavaScript.
- *
- * @package    Compare_Permalinks
- * @subpackage Compare_Permalinks/admin
- * @author     Tyshchuk Roman <tisukroman@gmail.com>
- */
 class Compare_Permalinks_Admin {
-
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
 	private $plugin_name;
-
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
 	private $version;
 
-	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
-	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct($plugin_name, $version) {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 	}
 
-	/**
-	 * Register the stylesheets for the admin area.
-	 *
-	 * @since    1.0.0
-	 */
 	public function enqueue_styles() {
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/compare-permalinks-admin.css', array(), $this->version, 'all' );
+		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/compare-permalinks-admin.css', [], $this->version, 'all');
 	}
 
-	/**
-	 * Register the JavaScript for the admin area.
-	 *
-	 * @since    1.0.0
-	 */
 	public function enqueue_scripts() {
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/compare-permalinks-admin.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/compare-permalinks-admin.js', ['jquery'], $this->version, false);
 	}
 
-	/**
-	 * Add Settings Page for the admin area.
-	 *
-	 * @since    1.0.0
-	 */
 	public function add_settings_page() {
     add_management_page(
-      __('Compare Permalinks', 'compare-permalinks'), // Page title
-      __('Compare Permalinks', 'compare-permalinks'), // Menu title
-      'manage_options',                               // Capability
-      'compare-permalinks-settings',                  // Menu slug
-      [$this, 'compare_permalinks_settings_display']  // Callback function
+      __('Compare Permalinks', 'compare-permalinks'),
+      __('Compare Permalinks', 'compare-permalinks'),
+      'manage_options',                               
+      'compare-permalinks-settings',                  
+      [$this, 'compare_permalinks_settings_display'] 
     );
 	}
 
-	/**
-	 * HTML/PHP for Settings Page
-	 *
-	 * @since    1.0.0
-	 */
 	public function compare_permalinks_settings_display() {
-	  require_once plugin_dir_path( __FILE__ ) . 'partials/compare-settings.php';
+	  require_once plugin_dir_path(__FILE__) . 'partials/compare-settings.php';
   }
 
-	/**
-	 * Handle csv export action
-	 *
-	 * @since    1.0.0
-	 */
 	public function handle_csv_export_action() {
     if (
       isset($_POST['compare_permalinks_export_csv']) &&

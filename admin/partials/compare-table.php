@@ -62,39 +62,39 @@ $site_url = rtrim(get_site_url(), '/');
 
 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
   <select id="permalink-filter">
-    <option value="all"><?php _e('All', 'compare-permalinks') ?></option>
-    <option value="match"><?php _e('Matches', 'compare-permalinks') ?> ✅</option>
-    <option value="mismatch"><?php _e('Mismatches', 'compare-permalinks') ?> ❌</option>
+    <option value="all"><?php esc_html_e('All', 'compare-permalinks') ?></option>
+    <option value="match"><?php esc_html_e('Matches', 'compare-permalinks') ?> ✅</option>
+    <option value="mismatch"><?php esc_html_e('Mismatches', 'compare-permalinks') ?> ❌</option>
   </select>
 
-  <button id="toggle-domain" class="button"><?php _e('Toggle Domain Name', 'compare-permalinks') ?></button>
+  <button id="toggle-domain" class="button"><?php esc_html_e('Toggle Domain Name', 'compare-permalinks') ?></button>
 </div>
 
-<table class="widefat striped" id="permalink-table" data-site-url="<?php echo esc_attr($site_url); ?>">
+<table class="widefat striped" id="permalink-table" data-site-url="<?php esc_attr_e($site_url); ?>">
   <thead>
     <tr>
-      <th><?php _e('Imported Permalink', 'compare-permalinks') ?></th>
-      <th><?php _e('Site Permalink', 'compare-permalinks') ?></th>
-      <th><?php _e('Status', 'compare-permalinks') ?></th>
-      <th><?php _e('Redirection', 'compare-permalinks') ?></th>
+      <th><?php esc_html_e('Imported Permalink', 'compare-permalinks') ?></th>
+      <th><?php esc_html_e('Site Permalink', 'compare-permalinks') ?></th>
+      <th><?php esc_html_e('Status', 'compare-permalinks') ?></th>
+      <th><?php esc_html_e('Redirection', 'compare-permalinks') ?></th>
     </tr>
   </thead>
   <tbody>
     <?php foreach ($results as $row): ?>
-      <tr class="permalink-row <?php echo esc_attr($row['status']) ?>">
-        <td class="imported-link" data-path="<?php echo esc_attr($row['imported']) ?>">
+      <tr class="permalink-row <?php esc_attr_e($row['status']) ?>">
+        <td class="imported-link" data-path="<?php esc_attr_e($row['imported']) ?>">
           <?php echo esc_html($row['imported']) ?>
         </td>
-        <td class="matched-link" data-path="<?php echo esc_attr($row['current'] ?? '') ?>">
+        <td class="matched-link" data-path="<?php esc_attr_e($row['current'] ?? '') ?>">
           <?php echo esc_html($row['current'] ?? '—') ?>
         </td>
         <td>
           <?php if ($row['status'] === 'match'): ?>
-            ✅ <?php _e('Match', 'compare-permalinks') ?>
+            ✅ <?php esc_html_e('Match', 'compare-permalinks') ?>
           <?php elseif($row['status'] === 'mismatch'): ?>
-            ❌ <?php _e('Mismatch', 'compare-permalinks') ?> (<?php echo round($row['similarity'], 1) ?>%)
+            ❌ <?php esc_html_e('Mismatch', 'compare-permalinks') ?> (<?php echo round($row['similarity'], 1) ?>%)
           <?php elseif($row['status'] === 'redirect'): ?>
-            🔁 <?php _e('Redirects', 'compare-permalinks') ?>
+            🔁 <?php esc_html_e('Redirects', 'compare-permalinks') ?>
           <?php endif; ?>
         </td>
         <td>
@@ -103,10 +103,10 @@ $site_url = rtrim(get_site_url(), '/');
               <input 
                 type="checkbox" 
                 class="add-redirect-checkbox" 
-                data-old="<?php echo esc_attr($row['imported']) ?>" 
-                data-new="<?php echo esc_attr($row['current']) ?>"
+                data-old="<?php esc_attr_e($row['imported']) ?>" 
+                data-new="<?php esc_attr_e($row['current']) ?>"
               >
-              <?php _e('Add Redirection', 'compare-permalinks') ?>
+              <?php esc_html_e('Add Redirection', 'compare-permalinks') ?>
             </label>
           <?php endif; ?>
         </td>
@@ -117,11 +117,11 @@ $site_url = rtrim(get_site_url(), '/');
 
 <div style="display: flex; gap: 10px; margin-block: 10px;">
   <button id="export-csv" class="button">
-    <?php _e('Export Results', 'compare-permalinks') ?>
+    <?php esc_html_e('Export Results', 'compare-permalinks') ?>
   </button>
 
   <button id="export-redirection-rules" class="button">
-    <?php _e('Export Redirection Rules', 'compare-permalinks') ?>
+    <?php esc_html_e('Export Redirection Rules', 'compare-permalinks') ?>
   </button>
 </div>
 
@@ -169,7 +169,7 @@ document.getElementById('export-csv').addEventListener('click', function () {
   const rows = document.querySelectorAll('.permalink-row');
   const headers = ['Imported Permalink', 'Matched Site Permalink', 'Status', 'Similarity %'];
   const csv = [headers];
-  const siteName = '<?php echo get_bloginfo('name'); ?>';
+  const siteName = '<?php esc_html_e(get_bloginfo('name')); ?>';
 
   rows.forEach(row => {
     const imported = row.querySelector('.imported-link')?.dataset.path || '';
@@ -195,7 +195,7 @@ document.getElementById('export-csv').addEventListener('click', function () {
 document.getElementById('export-redirection-rules').addEventListener('click', function () {
   const checkboxes = document.querySelectorAll('.add-redirect-checkbox:checked');
   if (checkboxes.length === 0) {
-    alert('<?php _e('No redirects selected.', 'compare-permalinks') ?>');
+    alert('<?php esc_html_e('No redirects selected.', 'compare-permalinks') ?>');
     return;
   }
 
