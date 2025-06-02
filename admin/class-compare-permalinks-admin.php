@@ -131,7 +131,7 @@ class Compare_Permalinks_Admin {
 
     add_settings_section(
       'compare_permalinks_main_section',
-      __('Post Types', 'compare-permalinks'),
+      __('Settings', 'compare-permalinks'),
       null,
       'compare_permalinks_settings_page'
     );

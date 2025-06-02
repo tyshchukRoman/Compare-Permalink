@@ -46,6 +46,16 @@ $current_urls = array_map(fn($url) => cp_get_url_path($url), cp_get_current_urls
  */
 $results = cp_compare_urls($imported_urls, $current_urls);
 
+$results = array_map(function($row) {
+  $redirection_exists = cp_redirection_exists($row['imported'], $row['current']);
+
+  if($redirection_exists) {
+    $row['status'] = 'redirect';
+  }
+
+  return $row;
+}, $results);
+
 $site_url = rtrim(get_site_url(), '/');
 
 ?>
@@ -64,13 +74,14 @@ $site_url = rtrim(get_site_url(), '/');
   <thead>
     <tr>
       <th><?php _e('Imported Permalink', 'compare-permalinks') ?></th>
-      <th><?php _e('Matched Site Permalink', 'compare-permalinks') ?></th>
+      <th><?php _e('Site Permalink', 'compare-permalinks') ?></th>
       <th><?php _e('Status', 'compare-permalinks') ?></th>
+      <th><?php _e('Redirection', 'compare-permalinks') ?></th>
     </tr>
   </thead>
   <tbody>
     <?php foreach ($results as $row): ?>
-      <tr class="permalink-row <?php esc_attr_e($row['status']) ?>">
+      <tr class="permalink-row <?php echo esc_attr($row['status']) ?>">
         <td class="imported-link" data-path="<?php echo esc_attr($row['imported']) ?>">
           <?php echo esc_html($row['imported']) ?>
         </td>
@@ -80,8 +91,23 @@ $site_url = rtrim(get_site_url(), '/');
         <td>
           <?php if ($row['status'] === 'match'): ?>
             ✅ <?php _e('Match', 'compare-permalinks') ?>
-          <?php else: ?>
+          <?php elseif($row['status'] === 'mismatch'): ?>
             ❌ <?php _e('Mismatch', 'compare-permalinks') ?> (<?php echo round($row['similarity'], 1) ?>%)
+          <?php elseif($row['status'] === 'redirect'): ?>
+            🔁 <?php _e('Redirects', 'compare-permalinks') ?>
+          <?php endif; ?>
+        </td>
+        <td>
+          <?php if ($row['status'] === 'mismatch' && !empty($row['current'])): ?>
+            <label>
+              <input 
+                type="checkbox" 
+                class="add-redirect-checkbox" 
+                data-old="<?php echo esc_attr($row['imported']) ?>" 
+                data-new="<?php echo esc_attr($row['current']) ?>"
+              >
+              <?php _e('Add Redirection', 'compare-permalinks') ?>
+            </label>
           <?php endif; ?>
         </td>
       </tr>
@@ -89,80 +115,111 @@ $site_url = rtrim(get_site_url(), '/');
   </tbody>
 </table>
 
-<button id="export-csv" class="button" style="margin-top: 10px;"><?php _e('Export CSV', 'compare-permalinks') ?></button>
+<div style="display: flex; gap: 10px; margin-block: 10px;">
+  <button id="export-csv" class="button">
+    <?php _e('Export Results', 'compare-permalinks') ?>
+  </button>
+
+  <button id="export-redirection-rules" class="button">
+    <?php _e('Export Redirection Rules', 'compare-permalinks') ?>
+  </button>
+</div>
+
 
 <script>
-  // Filtering logic
-  document.getElementById('permalink-filter').addEventListener('change', function () {
-    const selected = this.value;
-    const rows = document.querySelectorAll('.permalink-row');
 
-    rows.forEach(row => {
-      if (selected === 'all') {
-        row.style.display = '';
-      } else if (!row.classList.contains(selected)) {
-        row.style.display = 'none';
-      } else {
-        row.style.display = '';
-      }
-    });
+// Filter rows by status
+document.getElementById('permalink-filter').addEventListener('change', function () {
+  const selected = this.value;
+  const rows = document.querySelectorAll('.permalink-row');
+
+  rows.forEach(row => {
+    row.style.display = (selected === 'all' || row.classList.contains(selected)) ? '' : 'none';
+  });
+});
+
+// Toggle domain display
+document.getElementById('toggle-domain').addEventListener('click', function () {
+  const siteUrl = document.getElementById('permalink-table').dataset.siteUrl;
+
+  const toggleCellLink = (cell) => {
+    const path = cell.dataset.path;
+    if (!path || path === '—') return;
+
+    const hasLink = cell.querySelector('a');
+    if (hasLink) {
+      cell.textContent = path;
+      cell.dataset.path = path;
+    } else {
+      const fullUrl = siteUrl + path;
+      const a = document.createElement('a');
+      a.href = fullUrl;
+      a.textContent = fullUrl;
+      a.target = '_blank';
+      cell.textContent = '';
+      cell.appendChild(a);
+    }
+  };
+
+  document.querySelectorAll('.imported-link, .matched-link').forEach(cell => toggleCellLink(cell));
+});
+
+// Export CSV of comparison results
+document.getElementById('export-csv').addEventListener('click', function () {
+  const rows = document.querySelectorAll('.permalink-row');
+  const headers = ['Imported Permalink', 'Matched Site Permalink', 'Status', 'Similarity %'];
+  const csv = [headers];
+  const siteName = '<?php echo get_bloginfo('name'); ?>';
+
+  rows.forEach(row => {
+    const imported = row.querySelector('.imported-link')?.dataset.path || '';
+    const matched = row.querySelector('.matched-link')?.dataset.path || '';
+    const status = row.classList.contains('match') ? 'Match' : 'Mismatch';
+    const similarityMatch = row.querySelector('td:nth-child(3)')?.textContent.match(/\(([\d.]+)%\)/);
+    const similarity = similarityMatch ? similarityMatch[1] : (status === 'Match' ? '100' : '');
+    csv.push([imported, matched, status, similarity]);
   });
 
-  // Toggle domain logic
-  document.getElementById('toggle-domain').addEventListener('click', function () {
-    const table = document.getElementById('permalink-table');
-    const siteUrl = table.dataset.siteUrl;
+  const csvContent = csv.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = siteName + '-permalink-comparison.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
 
-    const toggleCellLink = (cell, type) => {
-      const path = cell.dataset.path;
-      if (!path || path === '—') return;
+// Export redirection rules
+document.getElementById('export-redirection-rules').addEventListener('click', function () {
+  const checkboxes = document.querySelectorAll('.add-redirect-checkbox:checked');
+  if (checkboxes.length === 0) {
+    alert('<?php _e('No redirects selected.', 'compare-permalinks') ?>');
+    return;
+  }
 
-      const isLinked = cell.querySelector('a');
-      if (isLinked) {
-        cell.textContent = path;
-      } else {
-        const a = document.createElement('a');
-        a.href = siteUrl + path;
-        a.textContent = siteUrl + path;
-        a.target = '_blank';
-        cell.textContent = '';
-        cell.appendChild(a);
-      }
-    };
+  const rows = [];
+  const siteUrl = '<?php echo esc_url(home_url()); ?>';
+  const siteName = '<?php echo get_bloginfo('name'); ?>';
 
-    document.querySelectorAll('.imported-link').forEach(cell => toggleCellLink(cell, 'imported'));
-    document.querySelectorAll('.matched-link').forEach(cell => toggleCellLink(cell, 'matched'));
+  checkboxes.forEach(cb => {
+    let oldUrl = cb.dataset.old.trim();
+    let newUrl = cb.dataset.new.trim();
+    if (!oldUrl.startsWith('/')) oldUrl = '/' + oldUrl;
+    if (!newUrl.startsWith('/')) newUrl = '/' + newUrl;
+    rows.push([oldUrl, newUrl, '0', '301']);
   });
+
+  const csvContent = rows.map(row => row.join(',')).join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = siteName + '-redirection-rules.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
+
 </script>
-
-<script>
-  document.getElementById('export-csv').addEventListener('click', function () {
-    const rows = document.querySelectorAll('.permalink-row');
-    const headers = ['Imported Permalink', 'Matched Site Permalink', 'Status', 'Similarity %'];
-    const csv = [headers];
-
-    rows.forEach(row => {
-      const imported = row.querySelector('.imported-link')?.dataset.path || '';
-      const matched = row.querySelector('.matched-link')?.dataset.path || '';
-      const status = row.classList.contains('match') ? 'Match' : 'Mismatch';
-      const similarityText = row.querySelector('td:last-child')?.textContent.match(/\(([\d.]+)%\)/);
-      const similarity = similarityText ? similarityText[1] : (status === 'Match' ? '100' : '');
-
-      csv.push([imported, matched, status, similarity]);
-    });
-
-    // Convert to CSV format
-    const csvContent = csv.map(row => row.map(val => `"${val}"`).join(',')).join('\n');
-
-    // Trigger download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'permalink-comparison.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
-</script>
-
