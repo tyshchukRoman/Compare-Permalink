@@ -46,16 +46,6 @@ $current_urls = array_map(fn($url) => cp_get_url_path($url), cp_get_current_urls
  */
 $results = cp_compare_urls($imported_urls, $current_urls);
 
-$results = array_map(function($row) {
-  $redirection_exists = cp_redirection_exists($row['imported'], $row['current']);
-
-  if($redirection_exists) {
-    $row['status'] = 'redirect';
-  }
-
-  return $row;
-}, $results);
-
 $site_url = rtrim(get_site_url(), '/');
 
 ?>
