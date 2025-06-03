@@ -1,6 +1,5 @@
 <?php
 
 function cp_get_url_path($url) {
-  $parsed = parse_url($url);
-  return $parsed['path'] ?? '/';
+  return trim(wp_parse_url($url, PHP_URL_PATH), '/');
 }

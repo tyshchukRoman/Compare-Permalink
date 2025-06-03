@@ -1,6 +1,6 @@
 <?php
 
-function cp_compare_urls($imported_links, $current_links) {
+function cp_get_compare_results($imported_links, $current_links) {
     $results = [];
 
     foreach ($imported_links as $imported_link) {
@@ -10,7 +10,7 @@ function cp_compare_urls($imported_links, $current_links) {
         /*
          * Imported link matches current site link
          */
-        if (in_array($imported_link, $current_links)) {
+        if (in_array(cp_get_url_path($imported_link), $current_links)) {
             $results[] = [
                 'status' => 'match',
                 'imported' => $imported_link,
@@ -22,7 +22,8 @@ function cp_compare_urls($imported_links, $current_links) {
         /*
          * Imported link redirects to current site link
          */
-        elseif($redirection_link && in_array($redirection_link, $current_links)) {
+
+        elseif($redirection_link) {
             $results[] = [
                 'status' => 'redirect',
                 'imported' => $imported_link,

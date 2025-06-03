@@ -15,12 +15,12 @@ function cp_get_redirection_target($source_url) {
         return null; // Table doesn't exist — Redirection plugin not installed
     }
 
-    $source_path = '/' . ltrim(wp_parse_url($source_url, PHP_URL_PATH), '/');
+    $source_path = cp_get_url_path($source_url);
 
     $query = $wpdb->prepare("
         SELECT action_data 
-        FROM {$wpdb->prefix}redirection_items 
-        WHERE url = %s 
+        FROM {$table_name}
+        WHERE TRIM(BOTH '/' FROM url) = TRIM(BOTH '/' FROM %s)
           AND action_type = 'url' 
           AND action_code = 301
         LIMIT 1
@@ -28,5 +28,5 @@ function cp_get_redirection_target($source_url) {
 
     $target = $wpdb->get_var($query);
 
-    return $target ? trim($target) : null;
+    return $target ? cp_get_url_path($target) : null;
 }

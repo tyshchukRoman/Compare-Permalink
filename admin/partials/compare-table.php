@@ -39,12 +39,12 @@ $imported_urls = cp_get_imported_urls('imported-links');
 /*
  * Fetch all urls on current website
  */
-$current_urls = array_map(fn($url) => cp_get_url_path($url), cp_get_current_urls());
+$current_urls = cp_get_current_urls();
 
 /*
- * Find all new urls on current website
+ * Make results table
  */
-$results = cp_compare_urls($imported_urls, $current_urls);
+$results = cp_get_compare_results($imported_urls, $current_urls);
 
 $site_url = rtrim(get_site_url(), '/');
 
@@ -61,7 +61,7 @@ $site_url = rtrim(get_site_url(), '/');
   <button id="toggle-domain" class="button"><?php esc_html_e('Toggle Domain Name', 'compare-permalinks') ?></button>
 </div>
 
-<table class="widefat striped" id="permalink-table" data-site-url="<?php esc_attr_e($site_url); ?>">
+<table class="widefat striped" id="permalink-table" data-site-url="<?php esc_attr_e($site_url); ?>/">
   <thead>
     <tr>
       <th><?php esc_html_e('No', 'compare-permalinks') ?></th>

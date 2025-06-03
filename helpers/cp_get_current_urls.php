@@ -26,7 +26,7 @@ function cp_get_current_urls() {
             $posts = get_posts($args);
 
             foreach ($posts as $post) {
-                $all_urls[] = apply_filters('wpml_permalink', get_permalink($post), $lang_code);
+                $all_urls[] = cp_get_url_path(apply_filters('wpml_permalink', get_permalink($post), $lang_code));
             }
         }
 
@@ -50,7 +50,7 @@ function cp_get_current_urls() {
         $posts = get_posts($args);
 
         foreach ($posts as $post) {
-            $all_urls[] = get_permalink($post);
+            $all_urls[] = cp_get_url_path(get_permalink($post));
         }
     }
 
