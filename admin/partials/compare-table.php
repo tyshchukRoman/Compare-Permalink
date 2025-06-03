@@ -65,6 +65,7 @@ $site_url = rtrim(get_site_url(), '/');
     <option value="all"><?php esc_html_e('All', 'compare-permalinks') ?></option>
     <option value="match"><?php esc_html_e('Matches', 'compare-permalinks') ?> ✅</option>
     <option value="mismatch"><?php esc_html_e('Mismatches', 'compare-permalinks') ?> ❌</option>
+    <option value="redirect"><?php esc_html_e('Redirects', 'compare-permalinks') ?> 🔁</option>
   </select>
 
   <button id="toggle-domain" class="button"><?php esc_html_e('Toggle Domain Name', 'compare-permalinks') ?></button>
@@ -73,6 +74,7 @@ $site_url = rtrim(get_site_url(), '/');
 <table class="widefat striped" id="permalink-table" data-site-url="<?php esc_attr_e($site_url); ?>">
   <thead>
     <tr>
+      <th><?php esc_html_e('No', 'compare-permalinks') ?></th>
       <th><?php esc_html_e('Imported Permalink', 'compare-permalinks') ?></th>
       <th><?php esc_html_e('Site Permalink', 'compare-permalinks') ?></th>
       <th><?php esc_html_e('Status', 'compare-permalinks') ?></th>
@@ -82,6 +84,8 @@ $site_url = rtrim(get_site_url(), '/');
   <tbody>
     <?php foreach ($results as $row): ?>
       <tr class="permalink-row <?php esc_attr_e($row['status']) ?>">
+        <td class="number">
+        </td>
         <td class="imported-link" data-path="<?php esc_attr_e($row['imported']) ?>">
           <?php echo esc_html($row['imported']) ?>
         </td>

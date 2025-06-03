@@ -19,47 +19,30 @@
   padding: 0;
 }
 
-.compare-permalinks-action {
+.compare-permalinks-settings-page .compare-permalinks-action {
   margin-top: 60px;
 }
 
-.compare-permalinks-table {
-  margin-top: 40px;
-  overflow: auto;
-  width: 100%;
+.compare-permalinks-settings-page table .imported-link,
+.compare-permalinks-settings-page table .matched-link {
+  width: 40%;
 }
 
-.compare-permalinks-table table {
-  border: 1px solid var(--color-primary);
-  height: 100%;
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-  border-spacing: 1px;
-  text-align: left;
-}
-
-.compare-permalinks-table caption {
-  caption-side: top;
-  text-align: left;
-}
-
-.compare-permalinks-table th {
-  border: 1px solid var(--color-dark-1);
-  background-color: var(--color-dark-2);
-  color: #000000;
-  padding: 8px;
-}
-
-.compare-permalinks-table td {
-  border: 1px solid var(--color-dark-1);
-  background-color: var(--color-white);
-  color: var(--color-black);
-  padding: 8px;
-}
-
-.compare-permalinks-table a {
+.compare-permalinks-settings-page .compare-permalinks-table a {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.compare-permalinks-settings-page tbody {
+  counter-reset: item-counter;
+}
+
+.compare-permalinks-settings-page tbody tr {
+  counter-increment: item-counter;
+  position: relative;
+}
+
+.compare-permalinks-settings-page tbody tr .number::after {
+  content: counter(item-counter);
 }
