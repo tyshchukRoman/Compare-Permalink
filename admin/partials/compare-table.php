@@ -1,52 +1,12 @@
 <?php
 
 /*
- * Check if user uploaded file
+ * Get compare results
  */
-if (!isset($_FILES['imported-links'])){
-  return;
-} 
 
-/*
- * Check if form was submitted
- */
-if(!isset($_POST['submit'])) {
-  return;
-}
+$results = $engine->get_results();
 
-/*
- * Check and verify nonce
- */
-if(
-  !isset($_POST['compare_permalinks_file_upload_nonce']) ||
-  !wp_verify_nonce($_POST['compare_permalinks_file_upload_nonce'], 'compare_permalinks_file_upload')
-){
-  return;
-}
-
-/*
- * Check for file upload error
- */
-if ($_FILES['imported-links']['error'] !== UPLOAD_ERR_OK) {
-  return;
-}
-
-/*
- * Get URLs from imported file
- */
-$imported_urls = cp_get_imported_urls('imported-links');
-
-/*
- * Fetch all urls on current website
- */
-$current_urls = cp_get_current_urls();
-
-/*
- * Make results table
- */
-$results = cp_get_compare_results($imported_urls, $current_urls);
-
-$site_url = rtrim(get_site_url(), '/');
+$site_url = rtrim(get_site_url(), '/') . '/';
 
 ?>
 
@@ -61,7 +21,7 @@ $site_url = rtrim(get_site_url(), '/');
   <button id="toggle-domain" class="button"><?php esc_html_e('Toggle Domain Name', 'compare-permalinks') ?></button>
 </div>
 
-<table class="widefat striped" id="permalink-table" data-site-url="<?php esc_attr_e($site_url); ?>/">
+<table class="widefat striped" id="permalink-table" data-site-url="<?php esc_attr_e($site_url); ?>">
   <thead>
     <tr>
       <th><?php esc_html_e('No', 'compare-permalinks') ?></th>

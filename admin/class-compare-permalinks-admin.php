@@ -3,10 +3,12 @@
 class Compare_Permalinks_Admin {
 	private $plugin_name;
 	private $version;
+	private $engine;
 
-	public function __construct($plugin_name, $version) {
+	public function __construct($plugin_name, $version, $engine) {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+		$this->engine = $engine;
 	}
 
 	public function enqueue_styles() {
@@ -28,34 +30,9 @@ class Compare_Permalinks_Admin {
 	}
 
 	public function compare_permalinks_settings_display() {
+    $engine = $this->engine;
+
 	  require_once plugin_dir_path(__FILE__) . 'partials/compare-settings.php';
-  }
-
-	public function handle_csv_export_action() {
-    if (
-      isset($_POST['compare_permalinks_export_csv']) &&
-      isset($_POST['compare_permalinks_export_csv_nonce']) &&
-      wp_verify_nonce($_POST['compare_permalinks_export_csv_nonce'], 'compare_permalinks_export_csv')
-    ) {
-      $current_urls = cp_get_current_urls();
-      $site_title = get_bloginfo('name');
-
-      if (!empty($current_urls)) {
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename="'.$site_title.'-permalinks.csv"');
-        header('Pragma: no-cache');
-        header('Expires: 0');
-
-        $output = fopen('php://output', 'w');
-
-        foreach ($current_urls as $url) {
-          fputcsv($output, [$url]);
-        }
-
-        fclose($output);
-        exit;
-      }
-    }
   }
 
   public function register_settings() {
@@ -89,5 +66,4 @@ class Compare_Permalinks_Admin {
       echo '</label><br>';
     }
   }
-
 }

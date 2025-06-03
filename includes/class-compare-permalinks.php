@@ -1,9 +1,10 @@
 <?php
 
 class Compare_Permalinks {
-	protected $loader;
 	protected $plugin_name;
 	protected $version;
+	protected $loader;
+	protected $engine;
 
 	public function __construct() {
     $this->version = COMPARE_PERMALINKS_VERSION;
@@ -11,17 +12,20 @@ class Compare_Permalinks {
 
 		$this->load_dependencies();
 		$this->set_locale();
+		$this->define_engine_hooks();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 	}
 
 	private function load_dependencies() {
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-compare-permalinks-loader.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-compare-permalinks-engine.php';
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-compare-permalinks-i18n.php';
 		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-compare-permalinks-admin.php';
 		require_once plugin_dir_path(dirname(__FILE__)) . 'public/class-compare-permalinks-public.php';
 
 		$this->loader = new Compare_Permalinks_Loader();
+		$this->engine = new Compare_Permalinks_Engine();
 	}
 
 	private function set_locale() {
@@ -30,14 +34,17 @@ class Compare_Permalinks {
 		$this->loader->add_action('plugins_loaded', $plugin_i18n, 'load_plugin_textdomain');
 	}
 
+	private function define_engine_hooks() {
+		$this->loader->add_action('admin_init', $this->engine, 'handle_csv_export_action');
+  }
+
 	private function define_admin_hooks() {
-		$plugin_admin = new Compare_Permalinks_Admin($this->get_plugin_name(), $this->get_version());
+		$plugin_admin = new Compare_Permalinks_Admin($this->get_plugin_name(), $this->get_version(), $this->get_engine());
 
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
 		$this->loader->add_action('admin_init', $plugin_admin, 'register_settings');
 		$this->loader->add_action('admin_menu', $plugin_admin, 'add_settings_page');
-		$this->loader->add_action('admin_init', $plugin_admin, 'handle_csv_export_action');
 	}
 
 	private function define_public_hooks() {
@@ -53,6 +60,10 @@ class Compare_Permalinks {
 
 	public function get_plugin_name() {
 		return $this->plugin_name;
+	}
+
+	public function get_engine() {
+		return $this->engine;
 	}
 
 	public function get_loader() {
