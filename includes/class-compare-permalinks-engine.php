@@ -11,7 +11,7 @@ class Compare_Permalinks_Engine {
   private array $results = [];
 
   public function __construct() {
-    $this->post_type = get_option('compare_permalinks_post_types', 'any');
+    $this->post_type = get_option('compare_permalinks_post_types', []);
     $this->site_title = get_bloginfo('name');
   }
   

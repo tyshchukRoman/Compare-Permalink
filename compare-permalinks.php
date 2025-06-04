@@ -57,7 +57,6 @@ register_deactivation_hook(__FILE__, 'deactivate_compare_permalinks');
  */
 function run_compare_permalinks() {
   require_once plugin_dir_path(__FILE__) . 'includes/class-compare-permalinks.php';
-  require_once plugin_dir_path(__FILE__) . 'helpers/helpers.php';
 
 	$plugin = new Compare_Permalinks();
 	$plugin->run();

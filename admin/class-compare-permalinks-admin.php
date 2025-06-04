@@ -36,7 +36,15 @@ class Compare_Permalinks_Admin {
   }
 
   public function register_settings() {
-    register_setting('compare_permalinks_settings_group', 'compare_permalinks_post_types');
+    register_setting('compare_permalinks_settings_group', 'compare_permalinks_post_types', [
+      'default' => [],
+      'type' => 'array',
+      'sanitize_callback' => 'post_types_option_sanitization',
+    ]);
+
+    function post_types_option_sanitization($input) {
+      return is_array($input) ? array_map('sanitize_text_field', $input) : [];
+    }
 
     add_settings_section(
       'compare_permalinks_main_section',
@@ -60,10 +68,17 @@ class Compare_Permalinks_Admin {
 
     foreach ($post_types as $post_type) {
       $checked = in_array($post_type->name, $selected) ? 'checked' : '';
-      echo '<label>';
-      echo '<input type="checkbox" name="compare_permalinks_post_types[]" value="' . esc_attr($post_type->name) . '" ' . $checked . '>';
-      echo ' ' . esc_html($post_type->label);
-      echo '</label><br>';
+    ?>
+      <label>
+        <input 
+          type="checkbox" 
+          name="compare_permalinks_post_types[]" 
+          value="<?php echo esc_attr($post_type->name) ?>" 
+          <?php echo esc_attr($checked) ?>
+        >
+        <?php echo esc_html($post_type->label) ?>
+      </label><br>
+    <?php
     }
   }
 }

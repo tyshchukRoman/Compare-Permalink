@@ -1,6 +1,6 @@
 === Compare Permalinks ===
 Contributors: tyshchukroman  
-Tags: migration, permalinks, redirects, redirection, export, SEO  
+Tags: migration, permalinks, redirects, SEO
 Requires at least: 5.0  
 Tested up to: 6.8  
 Requires PHP: 8.0  
