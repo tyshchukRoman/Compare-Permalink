@@ -203,11 +203,13 @@ class Compare_Permalinks_Engine {
   }
 
   public function get_redirection_target(string $source_url): string|null {
-    if(!isset($this->site_redirects[$source_url])) {
+    $site_redirects = $this->get_site_redirects();
+
+    if(!isset($site_redirects[$source_url])) {
       return null;
     }
 
-    return $this->normalize_url($this->site_redirects[$source_url]);
+    return $this->normalize_url($site_redirects[$source_url]);
   }
 
   public function get_posts(): array {
@@ -223,7 +225,8 @@ class Compare_Permalinks_Engine {
   }
 
   public function normalize_url(string $url): string {
-    return trim(wp_parse_url($url, PHP_URL_PATH), '/');
+    $path = wp_parse_url(trim($url), PHP_URL_PATH);
+    return trim($path, ' /');
   }
 
 }
