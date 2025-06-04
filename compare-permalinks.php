@@ -4,6 +4,7 @@
  * Description:       Plugin for comparing permalinks after redesign task
  * Version:           1.0.0
  * Author:            Tyshchuk Roman
+ * Author URI:        https://profiles.wordpress.org/tyshchukroman/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       compare-permalinks
