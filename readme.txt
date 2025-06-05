@@ -53,8 +53,7 @@ Yes, the plugin will extract the path (`/example-page/`) and ignore the domain.
 
 1. Upload and compare old permalinks with the current site.
 2. Filter by match status and toggle domain visibility.
-3. Export comparison results or redirection rules.
-4. Generate "Redirection" plugin-compatible CSV exports.
+3. Generate "Redirection" plugin-compatible CSV exports.
 
 == Changelog ==
 
