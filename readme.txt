@@ -12,7 +12,7 @@ Easily compare imported permalinks with your current site's structure. Spot mism
 
 == Description ==
 
-**Compare Permalinks** helps you identify permalink changes after migrating your WordPress website. Upload a file containing old URLs and compare them with your site's current permalinks. You can also export redirect rules for importing into the "Redirection" plugin.
+**Compare Permalinks** helps you identify permalink changes after migrating your WordPress website. Upload a file containing old URLs and compare them with your site's current permalinks. You can also export redirect rules for importing into the "Redirection" plugin. Migrating a website without preserving permalinks is like moving a store and not telling your customers where it went. You lose traffic, trust, and visibility. For SEO and user experience, keeping permalinks intact is non-negotiable. This plugin can help you quickly compare your permalinks.
 
 **Features:**
 
