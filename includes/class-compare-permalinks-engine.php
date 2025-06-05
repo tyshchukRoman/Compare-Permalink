@@ -15,30 +15,47 @@ class Compare_Permalinks_Engine {
     $this->site_title = get_bloginfo('name');
   }
   
-	public function handle_csv_export_action() {
+  public function handle_csv_export_action() {
     if (
-      isset($_POST['compare_permalinks_export_csv']) &&
-      isset($_POST['compare_permalinks_export_csv_nonce']) &&
-      wp_verify_nonce($_POST['compare_permalinks_export_csv_nonce'], 'compare_permalinks_export_csv')
+      !isset($_POST['compare_permalinks_export_csv']) ||
+      !isset($_POST['compare_permalinks_export_csv_nonce']) ||
+      !wp_verify_nonce(
+        sanitize_text_field(wp_unslash($_POST['compare_permalinks_export_csv_nonce'])),
+        'compare_permalinks_export_csv'
+      )
     ) {
-      $current_urls = $this->get_site_urls();
-
-      if (!empty($current_urls)) {
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename="' . $this->site_title . '-permalinks.csv"');
-        header('Pragma: no-cache');
-        header('Expires: 0');
-
-        $output = fopen('php://output', 'w');
-
-        foreach ($current_urls as $url) {
-          fputcsv($output, [$url]);
-        }
-
-        fclose($output);
-        exit;
-      }
+      return;
     }
+
+    if (!current_user_can('manage_options')) {
+      wp_die(esc_html__('You are not allowed to export permalinks.', 'compare-permalinks'));
+    }
+
+    $current_urls = $this->get_site_urls();
+
+    if (empty($current_urls) || !is_array($current_urls)) {
+      wp_die(esc_html__('No URLs found to export.', 'compare-permalinks'));
+    }
+
+    $sanitized_urls = array_map('esc_url_raw', $current_urls);
+
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . sanitize_file_name($this->site_title . '-permalinks.csv') . '"');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+
+    $output = fopen('php://output', 'w');
+
+    if ($output === false) {
+      wp_die(esc_html__('Could not open output stream for CSV export.', 'compare-permalinks'));
+    }
+
+    foreach ($sanitized_urls as $url) {
+      fputcsv($output, [$url]);
+    }
+
+    fclose($output);
+    exit;
   }
 
   public function get_site_urls(): array {
@@ -75,31 +92,35 @@ class Compare_Permalinks_Engine {
     return $this->site_urls;
   }
 
-  public function get_file_urls(string $filename = 'imported-links'): array {
+  public function get_file_urls(): array {
     if(!empty($this->file_urls)) {
       return $this->file_urls;
     }
 
-    if (!isset($_FILES[$filename])){
-      return $this->file_urls;
-    } 
-
-    if(!isset($_POST['submit'])) {
+    if(!isset($_POST['submit']) || empty($_POST['submit'])) {
       return $this->file_urls;
     }
 
+    if (!isset($_FILES["imported-links"]) || empty($_FILES["imported-links"])){
+      return $this->file_urls;
+    } 
+
     if(
       !isset($_POST['compare_permalinks_file_upload_nonce']) ||
-      !wp_verify_nonce($_POST['compare_permalinks_file_upload_nonce'], 'compare_permalinks_file_upload')
+      !wp_verify_nonce(sanitize_file_name(wp_unslash($_POST['compare_permalinks_file_upload_nonce'])), 'compare_permalinks_file_upload')
     ){
       return $this->file_urls;
     }
 
-    if ($_FILES[$filename]['error'] !== UPLOAD_ERR_OK) {
+    if (isset($_FILES["imported-links"]['error']) && $_FILES["imported-links"]['error'] !== UPLOAD_ERR_OK) {
       return $this->file_urls;
     }
 
-    $tmp_name = $_FILES[$filename]['tmp_name'];
+    if (!isset($_FILES["imported-links"]['tmp_name']) || empty($_FILES["imported-links"]['tmp_name'])) {
+      return $this->file_urls;
+    }
+
+    $tmp_name = sanitize_file_name($_FILES["imported-links"]['tmp_name']);
     $handle = fopen($tmp_name, 'r');
 
     if($handle === false) {
