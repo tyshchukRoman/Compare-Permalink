@@ -37,8 +37,6 @@ class Compare_Permalinks_Engine {
       wp_die(esc_html__('No URLs found to export.', 'compare-permalinks'));
     }
 
-    $sanitized_urls = array_map('esc_url_raw', $current_urls);
-
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . sanitize_file_name($this->site_title . '-permalinks.csv') . '"');
     header('Pragma: no-cache');
@@ -50,7 +48,9 @@ class Compare_Permalinks_Engine {
       wp_die(esc_html__('Could not open output stream for CSV export.', 'compare-permalinks'));
     }
 
-    foreach ($sanitized_urls as $url) {
+    foreach ($current_urls as $url) {
+      $url = $this->normalize_url(sanitize_text_field($url));
+
       fputcsv($output, [$url]);
     }
 
@@ -120,7 +120,7 @@ class Compare_Permalinks_Engine {
       return $this->file_urls;
     }
 
-    $tmp_name = sanitize_file_name($_FILES["imported-links"]['tmp_name']);
+    $tmp_name = sanitize_text_field($_FILES["imported-links"]['tmp_name']);
     $handle = fopen($tmp_name, 'r');
 
     if($handle === false) {
