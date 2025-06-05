@@ -37,24 +37,41 @@ class Compare_Permalinks_Engine {
       wp_die(esc_html__('No URLs found to export.', 'compare-permalinks'));
     }
 
+    global $wp_filesystem;
+
+    // Initialize WP_Filesystem
+    if (empty($wp_filesystem)) {
+      require_once ABSPATH . '/wp-admin/includes/file.php';
+      WP_Filesystem();
+    }
+
+    // Prepare file path
+    $upload_dir = wp_upload_dir();
+    $filename = sanitize_file_name($this->site_title . '-permalinks.csv');
+    $filepath = trailingslashit($upload_dir['basedir']) . $filename;
+
+    // Build CSV string
+    $csv_data = '';
+    foreach ($current_urls as $url) {
+      $url = $this->normalize_url(sanitize_text_field($url));
+      $csv_data .= $url . "\n";
+    }
+
+    // Write CSV to file
+    if (!$wp_filesystem->put_contents($filepath, $csv_data, FS_CHMOD_FILE)) {
+      wp_die(esc_html__('Failed to write CSV file.', 'compare-permalinks'));
+    }
+
+    // Output the file for download
     header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename="' . sanitize_file_name($this->site_title . '-permalinks.csv') . '"');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Content-Length: ' . filesize($filepath));
     header('Pragma: no-cache');
     header('Expires: 0');
 
-    $output = fopen('php://output', 'w');
+    echo esc_html($wp_filesystem->get_contents($filepath));
 
-    if ($output === false) {
-      wp_die(esc_html__('Could not open output stream for CSV export.', 'compare-permalinks'));
-    }
-
-    foreach ($current_urls as $url) {
-      $url = $this->normalize_url(sanitize_text_field($url));
-
-      fputcsv($output, [$url]);
-    }
-
-    fclose($output);
+    wp_delete_file($filepath);
     exit;
   }
 
@@ -93,45 +110,58 @@ class Compare_Permalinks_Engine {
   }
 
   public function get_file_urls(): array {
-    if(!empty($this->file_urls)) {
+    if (!empty($this->file_urls)) {
       return $this->file_urls;
     }
 
-    if(!isset($_POST['submit']) || empty($_POST['submit'])) {
+    if (!isset($_POST['submit']) || empty($_POST['submit'])) {
       return $this->file_urls;
     }
 
-    if (!isset($_FILES["imported-links"]) || empty($_FILES["imported-links"])){
-      return $this->file_urls;
-    } 
-
-    if(
+    if (
       !isset($_POST['compare_permalinks_file_upload_nonce']) ||
-      !wp_verify_nonce(sanitize_file_name(wp_unslash($_POST['compare_permalinks_file_upload_nonce'])), 'compare_permalinks_file_upload')
-    ){
+      !wp_verify_nonce(
+        sanitize_text_field(wp_unslash($_POST['compare_permalinks_file_upload_nonce'])),
+        'compare_permalinks_file_upload'
+      )
+    ) {
       return $this->file_urls;
     }
 
-    if (isset($_FILES["imported-links"]['error']) && $_FILES["imported-links"]['error'] !== UPLOAD_ERR_OK) {
+    if (!isset($_FILES['imported-links']) || empty($_FILES['imported-links'])) {
       return $this->file_urls;
     }
 
-    if (!isset($_FILES["imported-links"]['tmp_name']) || empty($_FILES["imported-links"]['tmp_name'])) {
+    $file = $_FILES['imported-links'];
+
+    if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
       return $this->file_urls;
     }
 
-    $tmp_name = sanitize_text_field($_FILES["imported-links"]['tmp_name']);
-    $handle = fopen($tmp_name, 'r');
-
-    if($handle === false) {
+    if (!isset($file['tmp_name']) || empty($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
       return $this->file_urls;
     }
 
-    while (($url = fgets($handle)) !== false) {
-      $this->file_urls[] = $this->normalize_url($url);
+    global $wp_filesystem;
+
+    if (empty($wp_filesystem)) {
+      require_once ABSPATH . 'wp-admin/includes/file.php';
+      WP_Filesystem();
     }
 
-    fclose($handle);
+    $content = $wp_filesystem->get_contents($file['tmp_name']);
+
+    if ($content === false) {
+      return $this->file_urls;
+    }
+
+    $lines = explode("\n", $content);
+
+    foreach ($lines as $line) {
+      if (!empty($line)) {
+        $this->file_urls[] = $this->normalize_url($line);
+      }
+    }
 
     return $this->file_urls;
   }
